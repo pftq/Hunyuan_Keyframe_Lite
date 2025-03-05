@@ -2,6 +2,7 @@
 Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. Also slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise), added flash/sage attention options from main repo, and added ffmpeg video rendering for adjustable bitrate, batch video options.
 
 Original script: https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora
+
 Heavier main repo with training options etc: https://github.com/dashtoon/hunyuan-video-keyframe-control-lora
 
 The script needs at least 40GB VRAM to run, so you're looking at renting an H100 to run this on Runpod or other cloud services.
