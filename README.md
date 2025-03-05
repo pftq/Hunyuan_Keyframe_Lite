@@ -8,6 +8,7 @@ Credits to Dashtoon of course for the lora & original script, this is just a "re
 The script needs at least 40GB VRAM to run, so you're looking at renting an H100/A-series or other GPU online to run this. Performance numbers on the default/example image & settings:
 - H100 without Sage/Flash: 30 min
 - H100 with Sage: 10 min
+- A40 with Sage: 40 min
 
 Install Instructions on Linux on Runpod or other cloud services.  You can remove the venv/deactivate/export lines if running locally.
 ```
