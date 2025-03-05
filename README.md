@@ -1,5 +1,5 @@
 # Hunyuan Keyframe Lite
-Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. Also slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise), added flash/sage attention options from main repo, and added ffmpeg video rendering for adjustable bitrate, batch video options.
+Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. It also has optional support for SkyReels on top of it, slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise), added flash/sage attention options from main repo, and added ffmpeg video rendering for adjustable bitrate, batch video options.
 
 Original script: https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora
 
@@ -30,11 +30,12 @@ apt-get install -y ffmpeg
 deactivate
 ```
 
-Running the script. Settings are default to Dashtoon's original script. To use this on Skyreels, start prompt with "FPS-24, " and switch model_id to Skywork/SkyReels-V1-Hunyuan-I2V
+Running the script. Settings are default to Dashtoon's original script. To add Skyreels, start prompt with "FPS-24, " and switch transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V
 ```
 # create a video, can switch model_id to Skywork/SkyReels-V1-Hunyuan-I2V
 python video_generate.py \
---model_id "hunyuanvideo-community/HunyuanVideo" \
+--base_model_id "hunyuanvideo-community/HunyuanVideo" \
+--transformer_model_id "hunyuanvideo-community/HunyuanVideo" \
 --lora_path "i2v.sft" \
 --cfg 6 \
 --steps 50 \
