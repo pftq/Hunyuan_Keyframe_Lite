@@ -15,8 +15,8 @@ git clone https://github.com/pftq/Hunyuan_Keyframe_Lite
 cd Hunyuan_Keyframe_Lite
 wget https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora/resolve/main/i2v.sft
 python -m venv venv
-source venv/bin/activate
 export HF_HOME=/workspace/
+source venv/bin/activate
 pip install -r requirements.txt
 apt-get update
 apt-get install -y ffmpeg
