@@ -31,7 +31,7 @@ apt-get update
 apt-get install -y ffmpeg
 ```
 
-Running the script. Settings are default to Dashtoon's original script. If sage and flash are both enabled, it'll prioritize using sage. Can potentially stack on Skyreel by prompting with "FPS-24, " and switching transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V but needs more code to incorporate the negative prompt / image latents first.
+Running the script. Settings are default to Dashtoon's original script. If sage and flash are both enabled, it'll prioritize using sage. Leave out the seed line for random. Can potentially stack on Skyreel by prompting with "FPS-24, " and switching transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V but needs more code to incorporate the negative prompt / image latents first.
 ```
 python video_generate.py \
 --base_model_id "hunyuanvideo-community/HunyuanVideo" \
@@ -42,11 +42,12 @@ python video_generate.py \
 --cfg 6 \
 --steps 50 \
 --num_frames 77 \
+--seed 0 \
 --width 720 \
 --height 1280 \
 --image1 "https://content.dashtoon.ai/stability-images/e524013d-55d4-483a-b80a-dfc51d639158.png" \
 --image2 "https://content.dashtoon.ai/stability-images/0b29c296-0a90-4b92-96b9-1ed0ae21e480.png" \
---prompt "" \
+--prompt "a woman" \
 --mbps 15 \
 --video_num 1
 ```
