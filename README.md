@@ -29,7 +29,7 @@ apt-get update
 apt-get install -y ffmpeg
 ```
 
-Running the script. Settings are default to Dashtoon's original script. If sage and flash are both enabled, it'll prioritize using sage. To add Skyreels, start prompt with "FPS-24, " and switch transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V
+Running the script. Settings are default to Dashtoon's original script. If sage and flash are both enabled, it'll prioritize using sage. Can potentially stack on Skyreel by prompting with "FPS-24, " and switching transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V but needs more code to incorporate the negative prompt / image latents first.
 ```
 python video_generate.py \
 --base_model_id "hunyuanvideo-community/HunyuanVideo" \
