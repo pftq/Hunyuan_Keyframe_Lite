@@ -5,7 +5,9 @@ Original script: https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-
 
 Heavier main repo with training options etc: https://github.com/dashtoon/hunyuan-video-keyframe-control-lora
 
-The script needs at least 40GB VRAM to run, so you're looking at renting an H100 to run this on Runpod or other cloud services.
+The script needs at least 40GB VRAM to run, so you're looking at renting an H100 to run this on Runpod or other cloud services. Performance numbers on the default/example image & settings:
+- H100 without Sage/Flash: 30 min
+- H100 with Sage: 10 min
 
 Install Instructions on Linux on Runpod or other cloud services.  You can remove the venv/deactivate lines if running locally.
 ```
