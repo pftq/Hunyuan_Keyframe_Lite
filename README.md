@@ -42,9 +42,9 @@ python video_generate.py \
 --cfg 6 \
 --steps 50 \
 --num_frames 77 \
---seed 0 \
 --width 720 \
 --height 1280 \
+--seed 0 \
 --image1 "https://content.dashtoon.ai/stability-images/e524013d-55d4-483a-b80a-dfc51d639158.png" \
 --image2 "https://content.dashtoon.ai/stability-images/0b29c296-0a90-4b92-96b9-1ed0ae21e480.png" \
 --prompt "a woman" \
