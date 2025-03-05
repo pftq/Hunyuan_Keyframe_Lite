@@ -41,6 +41,7 @@ python video_generate.py \
 --use_flash \
 --cfg 6 \
 --steps 50 \
+--num_frames 77 \
 --width 720 \
 --height 1280 \
 --image1 "https://content.dashtoon.ai/stability-images/e524013d-55d4-483a-b80a-dfc51d639158.png" \
