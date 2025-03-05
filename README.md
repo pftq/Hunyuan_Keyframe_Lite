@@ -9,17 +9,17 @@ The script needs at least 40GB VRAM to run, so you're looking at renting an H100
 - H100 without Sage/Flash: 30 min
 - H100 with Sage: 10 min
 
-Install Instructions on Linux on Runpod or other cloud services.  You can remove the venv/deactivate lines if running locally.
+Install Instructions on Linux on Runpod or other cloud services.  You can remove the venv/deactivate/export lines if running locally.
 ```
 git clone https://github.com/pftq/Hunyuan_Keyframe_Lite
 cd Hunyuan_Keyframe_Lite
 wget https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora/resolve/main/i2v.sft
 python -m venv venv
 source venv/bin/activate
+export HF_HOME=/workspace/
 pip install -r requirements.txt
 apt-get update
 apt-get install -y ffmpeg
-deactivate
 ```
 
 If you are on cloud or Runpod, rerun this each time you start a pod/instance for ffmpeg to persist and for the models to download to the volume instead of container:
