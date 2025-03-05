@@ -34,7 +34,7 @@ Running the script. Settings are default to Dashtoon's original script. To use t
 ```
 # create a video, can switch model_id to Skywork/SkyReels-V1-Hunyuan-I2V
 python video_generate.py \
---model_id "Skywork/SkyReels-V1-Hunyuan-I2V" \
+--model_id "hunyuanvideo-community/HunyuanVideo" \
 --lora_path "i2v.sft" \
 --cfg 6 \
 --steps 50 \
