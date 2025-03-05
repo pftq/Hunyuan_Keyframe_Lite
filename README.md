@@ -1,4 +1,4 @@
-# Hunyuan_Keyframe_Lite
+# Hunyuan Keyframe Lite
 Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. Also slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise), added flash/sage attention options from main repo, and added ffmpeg video rendering for adjustable bitrate, batch video options.
 
 Original script: https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora
