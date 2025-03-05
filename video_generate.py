@@ -42,7 +42,6 @@ parser.add_argument("--num_frames", type=int, default=77)
 parser.add_argument("--steps", type=int, default=50)
 parser.add_argument("--seed", type=int, default=-1) 
 parser.add_argument("--prompt", type=str, default="a woman")
-parser.add_argument("--negative_prompt", type=str, default="Aerial view, aerial view, overexposed, low quality, deformation, a poor composition, bad hands, bad teeth, bad eyes, bad limbs, distortion")
 parser.add_argument("--height", type=int, default=1280)
 parser.add_argument("--width", type=int, default=720)
 parser.add_argument("--video_num", type=int, default=1)
@@ -538,7 +537,6 @@ for idx in range(args.video_num): # 20250305 pftq: for loop for multiple videos 
     video = call_pipe(
         pipe,
         prompt=args.prompt,
-        negative_prompt=args.negative_prompt,
         num_frames=args.num_frames,
         num_inference_steps=args.steps,
         image_latents=cond_latents,
