@@ -20,19 +20,17 @@ apt-get install -y ffmpeg
 deactivate
 ```
 
-If you are on cloud or Runpod, rerun this each time for ffmpeg to persist and for the models to download to the volume instead of container:
+If you are on cloud or Runpod, rerun this each time you start a pod/instance for ffmpeg to persist and for the models to download to the volume instead of container:
 ```
 cd Hunyuan_Keyframe_Lite
 export HF_HOME=/workspace/
 source venv/bin/activate
 apt-get update
 apt-get install -y ffmpeg
-deactivate
 ```
 
 Running the script. Settings are default to Dashtoon's original script. To add Skyreels, start prompt with "FPS-24, " and switch transformer_model_id to Skywork/SkyReels-V1-Hunyuan-I2V
 ```
-# create a video, can switch model_id to Skywork/SkyReels-V1-Hunyuan-I2V
 python video_generate.py \
 --base_model_id "hunyuanvideo-community/HunyuanVideo" \
 --transformer_model_id "hunyuanvideo-community/HunyuanVideo" \
