@@ -29,6 +29,7 @@ import argparse
 import os
 import time
 import random
+import sys
 
 # 20250305 pftq load settings for customization ####
 parser = argparse.ArgumentParser()
@@ -415,7 +416,7 @@ def is_ffmpeg_installed():
         return False
 
 # FFmpeg-based video saving with bitrate control
-def save_video_with_ffmpeg(frames, output_path, fps, bitrate_mbps):
+def save_video_with_ffmpeg(frames, output_path, fps, bitrate_mbps, metadata_comment=None):
     frames = [np.array(frame) for frame in frames]
     height, width, _ = frames[0].shape
     bitrate = f"{bitrate_mbps}M"
@@ -432,8 +433,13 @@ def save_video_with_ffmpeg(frames, output_path, fps, bitrate_mbps):
         "-b:v", bitrate,
         "-pix_fmt", "yuv420p",
         "-preset", "medium",
-        output_path
     ]
+
+    # Add metadata comment if provided
+    if metadata_comment:
+        cmd.extend(["-metadata", f"comment={metadata_comment}"])
+    cmd.append(output_path)
+
     process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     for frame in frames:
         process.stdin.write(frame.tobytes())
@@ -459,13 +465,60 @@ def save_video_with_opencv(frames, output_path, fps, bitrate_mbps):
     print(f"Video saved to {output_path} with OpenCV (bitrate control unavailable)")
 
 # Wrapper to choose between FFmpeg and OpenCV
-def save_video_with_quality(frames, output_path, fps, bitrate_mbps):
+def save_video_with_quality(frames, output_path, fps, bitrate_mbps, metadata_comment=None):
     if is_ffmpeg_installed():
-        save_video_with_ffmpeg(frames, output_path, fps, bitrate_mbps)
+        save_video_with_ffmpeg(frames, output_path, fps, bitrate_mbps, metadata_comment)
     else:
         print("FFmpeg not found. Falling back to OpenCV (bitrate not customizable).")
         save_video_with_opencv(frames, output_path, fps, bitrate_mbps)
 
+# Reconstruct command-line with quotes and backslash+linebreak after argument-value pairs
+def reconstruct_command_line(args, argv):
+    cmd_parts = [argv[0]]  # Start with script name
+    args_dict = vars(args)  # Convert args to dict
+    
+    i = 1
+    while i < len(argv):
+        arg = argv[i]
+        if arg.startswith("--"):
+            key = arg[2:]
+            if key in args_dict:
+                value = args_dict[key]
+                if isinstance(value, bool):
+                    if value:
+                        cmd_parts.append(arg)  # Boolean flag
+                    i += 1
+                else:
+                    # Combine argument and value into one part
+                    if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                        next_val = argv[i + 1]
+                        if isinstance(value, str):
+                            cmd_parts.append(f'{arg} "{value}"')  # Quote strings
+                        else:
+                            cmd_parts.append(f"{arg} {value}")  # No quotes for numbers
+                        i += 2
+                    else:
+                        # Handle missing value in argv (use parsed args)
+                        if isinstance(value, str):
+                            cmd_parts.append(f'{arg} "{value}"')
+                        else:
+                            cmd_parts.append(f"{arg} {value}")
+                        i += 1
+        else:
+            i += 1
+    
+    # Build multi-line string with backslash and newline except for the last part
+    if len(cmd_parts) > 1:
+        result = ""
+        for j, part in enumerate(cmd_parts):
+            if j < len(cmd_parts) - 1:
+                result += part + " \\\n"
+            else:
+                result += part  # No trailing backslash on last part
+        return result
+    return cmd_parts[0]  # Single arg case
+
+    
 # start executing here ###################
 print("Initializing model...")
 transformer_subfolder = "transformer"
@@ -572,6 +625,8 @@ for idx in range(args.video_num): # 20250305 pftq: for loop for multiple videos 
     now = datetime.now()
     formatted_time = now.strftime('%Y-%m-%d_%H-%M-%S')
     video_out_file = formatted_time+f"_hunyuankeyframe_{args.width}-{args.num_frames}f_cfg-{args.cfg}_steps-{args.steps}_seed-{args.seed}_{args.prompt[:40].replace('/','')}_{idx}"
+    command_line = reconstruct_command_line(args, sys.argv)  # 20250307: Store the full command-line used in the mp4 comment with quotes
+    #print(f"Command-line received:\n{command_line}")
     
     print("Starting video generation #"+str(idx)+" for "+video_out_file)
     video = call_pipe(
@@ -610,4 +665,4 @@ for idx in range(args.video_num): # 20250305 pftq: for loop for multiple videos 
     
     print("Saving "+video_out_file)
     #export_to_video(final_video, "output.mp4", fps=24)
-    save_video_with_quality(video, f"{video_out_file}.mp4", args.fps, args.mbps)
+    save_video_with_quality(video, f"{video_out_file}.mp4", args.fps, args.mbps, command_line)
