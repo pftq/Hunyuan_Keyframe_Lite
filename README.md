@@ -1,5 +1,5 @@
 # Hunyuan Keyframe Lite
-Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. It also has slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise even on H100), cleaned up flash/sage attention support from main repo, and quality of life improvements like ffmpeg video rendering for adjustable bitrate, batch video options, etc.  I was personally having a lot of issues getting the lora to work, so I'm just sharing here for anyone else that wants something easy to pull and start using.
+Cleaned up parameterized script for running dashtoon's Hunyuan Keyframe Control lora for image-to-video with start and end frames. It also has slight fixes for CPU offloading to work properly (out of memory / VRAM otherwise even on H100), cleaned up flash/sage attention support from main repo, and quality of life improvements like ffmpeg video rendering for adjustable bitrate, batch video options, optional color matching, etc.  I was personally having a lot of issues getting the lora to work, so I'm just sharing here for anyone else that wants something easy to pull and start using.
 
 Credits to Dashtoon of course for the lora & original script, this is just a "repackaging" to make it easier to use:
 - Original script: https://huggingface.co/dashtoon/hunyuan-video-keyframe-control-lora
@@ -50,5 +50,6 @@ python video_generate.py \
 --image2 "https://content.dashtoon.ai/stability-images/0b29c296-0a90-4b92-96b9-1ed0ae21e480.png" \
 --prompt "a woman" \
 --mbps 15 \
+--color_match \
 --video_num 1
 ```
