@@ -47,8 +47,12 @@ parser.add_argument("--width", type=int, default=720)
 parser.add_argument("--video_num", type=int, default=1)
 parser.add_argument("--image1", type=str, default="https://content.dashtoon.ai/stability-images/e524013d-55d4-483a-b80a-dfc51d639158.png")
 parser.add_argument("--image2", type=str, default="https://content.dashtoon.ai/stability-images/0b29c296-0a90-4b92-96b9-1ed0ae21e480.png")
+parser.add_argument("--image3", type=str, default="")
+parser.add_argument("--image4", type=str, default="")
+parser.add_argument("--image5", type=str, default="")
 parser.add_argument("--fps", type=int, default=24)
 parser.add_argument("--mbps", type=float, default=7)
+parser.add_argument("--color_match", action="store_true")
 
 args = parser.parse_args()
 
@@ -463,7 +467,7 @@ def save_video_with_quality(frames, output_path, fps, bitrate_mbps):
         save_video_with_opencv(frames, output_path, fps, bitrate_mbps)
 
 # start executing here ###################
-
+print("Initializing model...")
 transformer_subfolder = "transformer"
 if args.transformer_model_id == "Skywork/SkyReels-V1-Hunyuan-I2V":
     transformer_subfolder = "" # 20250305 pftq: Error otherwise - Skywork/SkyReels-V1-Hunyuan-I2V does not appear to have a file named config.json.
@@ -479,7 +483,7 @@ pipe.enable_model_cpu_offload()
 if use_sage or use_flash:
     for block in pipe.transformer.transformer_blocks + pipe.transformer.single_transformer_blocks:
         block.attn.processor = HunyuanVideoFlashAttnProcessor(use_flash_attn=use_flash, use_sageattn=use_sage)
-
+    
 with torch.no_grad():  # enable image inputs
     initial_input_channels = pipe.transformer.config.in_channels
     new_img_in = HunyuanVideoPatchEmbed(
@@ -495,7 +499,8 @@ with torch.no_grad():  # enable image inputs
         new_img_in.proj.bias.copy_(pipe.transformer.x_embedder.proj.bias)
 
     pipe.transformer.x_embedder = new_img_in
-    
+
+print("Loading lora...")
 lora_state_dict = pipe.lora_state_dict(args.lora_path)
 transformer_lora_state_dict = {f'{k.replace("transformer.", "")}': v for k, v in lora_state_dict.items() if k.startswith("transformer.") and "lora" in k}
 pipe.load_lora_into_transformer(transformer_lora_state_dict, transformer=pipe.transformer, adapter_name="i2v", _pipeline=pipe)
@@ -503,13 +508,48 @@ pipe.set_adapters(["i2v"], adapter_weights=[1.0])
 pipe.fuse_lora(components=["transformer"], lora_scale=1.0, adapter_names=["i2v"])
 pipe.unload_lora_weights()
 
+print("Loading images...")
 cond_frame1 = load_image(args.image1)
 cond_frame2 = load_image(args.image2)
+
 cond_frame1 = resize_image_to_bucket(cond_frame1, bucket_reso=(args.width, args.height))
 cond_frame2 = resize_image_to_bucket(cond_frame2, bucket_reso=(args.width, args.height))
 
 cond_video = np.zeros(shape=(args.num_frames, args.height, args.width, 3))
-cond_video[0], cond_video[-1] = np.array(cond_frame1), np.array(cond_frame2)
+
+# 20250305 pftq: Optional 3rd-5th frame, sadly doesn't work so easily, needs more code
+cond_frame3 = None
+cond_frame4 = None
+cond_frame5 = None
+
+if args.image3 != "":
+    cond_frame3 = load_image(args.image3)
+    cond_frame3 = resize_image_to_bucket(cond_frame3, bucket_reso=(args.width, args.height))
+    if args.image4 !="":
+        cond_frame4 = load_image(args.image4)
+        cond_frame4 = resize_image_to_bucket(cond_frame4, bucket_reso=(args.width, args.height))
+        if args.image5 !="":
+            cond_frame5 = load_image(args.image5)
+            cond_frame5 = resize_image_to_bucket(cond_frame5, bucket_reso=(args.width, args.height))
+            
+if args.image5 != "" and args.image4 != "" and args.image3 !="" and args.image2 !="":
+    cond_video[0] = np.array(cond_frame1)
+    cond_video[args.num_frames//4] = np.array(cond_frame2)
+    cond_video[(args.num_frames * 2 )//4] = np.array(cond_frame3)
+    cond_video[(args.num_frames * 3 )//4] = np.array(cond_frame4)
+    cond_video[args.num_frames -1] = np.array(cond_frame5)
+elif args.image4 != "" and args.image3 !="" and args.image2 !="":
+    cond_video[0] = np.array(cond_frame1)
+    cond_video[args.num_frames//3] = np.array(cond_frame2)
+    cond_video[(args.num_frames * 2 )//3] = np.array(cond_frame3)
+    cond_video[args.num_frames -1] = np.array(cond_frame4)
+elif args.image3 != "" and args.image2 !="":
+    cond_video[0] = np.array(cond_frame1)
+    cond_video[args.num_frames//2] = np.array(cond_frame2)
+    cond_video[args.num_frames -1] = np.array(cond_frame3)
+else:
+    cond_video[0] = np.array(cond_frame1)
+    cond_video[args.num_frames -1] = np.array(cond_frame2)
 
 cond_video = torch.from_numpy(cond_video.copy()).permute(0, 3, 1, 2)
 cond_video = torch.stack([video_transforms(x) for x in cond_video], dim=0).unsqueeze(0)
@@ -531,7 +571,7 @@ for idx in range(args.video_num): # 20250305 pftq: for loop for multiple videos 
     from datetime import datetime
     now = datetime.now()
     formatted_time = now.strftime('%Y-%m-%d_%H-%M-%S')
-    video_out_file = formatted_time+f"_hunyuankeyframe_{args.width}-{args.num_frames}f_cfg-{args.cfg}_steps-{args.steps}_seed-{args.seed}_{idx}.mp4"
+    video_out_file = formatted_time+f"_hunyuankeyframe_{args.width}-{args.num_frames}f_cfg-{args.cfg}_steps-{args.steps}_seed-{args.seed}_{args.prompt[:40].replace('/','')}_{idx}"
     
     print("Starting video generation #"+str(idx)+" for "+video_out_file)
     video = call_pipe(
@@ -546,6 +586,28 @@ for idx in range(args.video_num): # 20250305 pftq: for loop for multiple videos 
         generator=torch.Generator(device="cuda").manual_seed(args.seed),
     ).frames[0]
 
+    # 20250305 pftq: Color match with direct MKL and temporal smoothing
+    if args.color_match:
+        #save_video_with_quality(video, f"{video_out_file}_raw.mp4", args.fps, args.mbps)
+        print("Applying color matching to video...")
+        from color_matcher import ColorMatcher
+        from color_matcher.io_handler import load_img_file
+        from color_matcher.normalizer import Normalizer
+        
+        # Load the reference image (image1)
+        ref_img = load_img_file(args.image1)  # Original load
+        cm = ColorMatcher()
+        matched_video = []
+    
+        for frame in video:
+            frame_rgb = np.array(frame)  # Direct PIL to numpy
+            matched_frame = cm.transfer(src=frame_rgb, ref=ref_img, method='mkl')
+            matched_frame = Normalizer(matched_frame).uint8_norm()
+            matched_video.append(matched_frame)
+    
+        video = matched_video
+    # END OF COLOR MATCHING 
+    
     print("Saving "+video_out_file)
-    #export_to_video(video, "output.mp4", fps=24)
-    save_video_with_quality(video, f"{video_out_file}", args.fps, args.mbps)
+    #export_to_video(final_video, "output.mp4", fps=24)
+    save_video_with_quality(video, f"{video_out_file}.mp4", args.fps, args.mbps)
